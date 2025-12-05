@@ -12,9 +12,11 @@ addLayer("p", {
     baseResource: "points", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.9, // Prestige currency exponent
+    exponent: 0.85, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
+        if (hasUpgrade('p', 12)) mult = mult.times(2)
+        if (hasUpgrade('p', 14)) mult = mult.times(upgradeEffect('p', 14))
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -24,5 +26,62 @@ addLayer("p", {
     hotkeys: [
         {key: "p", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return true}
-})
+    layerShown(){return true},
+    upgrades: {11:{
+        title: "First Boost",
+        description: "2.5x points",
+        cost: new Decimal(3),
+    },
+        12:{
+    unlocked(){
+        unlocked = false
+        if (hasUpgrade('p', 11)) unlocked = true
+        return unlocked
+    },
+        title: "Second Boost",
+        description: "2x prestige points",
+        cost: new Decimal(7),
+    },
+        13:{
+    unlocked(){
+        unlocked = false
+        if (hasUpgrade('p', 12)) unlocked = true
+        return unlocked
+    },
+        title: "Pointed Boost",
+        description: "Multiply points based on prestige points",
+        cost: new Decimal(10),
+        effect() {
+        return player[this.layer].points.add(1).pow(0.55)
+    },
+    effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" },
+    },
+        14:{
+    unlocked(){
+        unlocked = false
+        if (hasUpgrade('p', 13)) unlocked = true
+        return unlocked
+    },
+        title: "Prestiged Boost",
+        description: "Multiply prestige points based on points",
+        cost: new Decimal(125),
+        effect() {
+        return player.points.add(1.1).pow(0.1)
+    },
+    effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" },
+ 
+    },
+        15:{
+    unlocked(){
+        unlocked = false
+        if (hasUpgrade('p', 14)) unlocked = true
+        return unlocked
+    },
+        title: "Exponent Boost",
+        description: "^1.15 point gain",
+        cost: new Decimal(1500),
+ 
+    }
+    }
+},
+)
